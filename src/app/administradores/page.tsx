@@ -14,19 +14,21 @@ import { toast } from "react-hot-toast";
 // Ícones
 import { FaShieldAlt, FaUserPlus, FaTrash, FaToggleOff, FaToggleOn } from "react-icons/fa";
 
-// Interface
+
 interface Admin {
   id: string;
   email: string;
-  role: "editor" | "master";
-  status: "ativo" | "suspenso";
+  role: "editor" | "master" | "afiliado" | "fornecedor" | "parceiro";
+  status: "ativo" | "inativo" | "suspenso";
   createdAt: Date | null;
 }
+
+
 
 export default function GestaoAdministradores() {
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<"editor" | "master">("editor");
+  const [role, setRole] = useState<"editor" | "master" | "afiliado" | "fornecedor" | "parceiro">("editor");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -94,7 +96,7 @@ export default function GestaoAdministradores() {
 
       setAdmins(prev => [
         ...prev,
-        { ...newAdmin, id: docRef.id, createdAt: new Date(), email: newAdmin.email! } // ! garante que não é null
+        { ...newAdmin, id: docRef.id, createdAt: new Date(), email: newAdmin.email! } 
       ]);
 
       toast.success("Administrador adicionado com sucesso!");
@@ -163,18 +165,24 @@ export default function GestaoAdministradores() {
               className="flex-1 p-3 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               required
             />
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value as "editor" | "master")}
-              className="p-3 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="editor">Editor</option>
-              <option value="master">Master</option>
-            </select>
+<select
+  value={role}
+  onChange={(e) =>
+    setRole(e.target.value as "editor" | "master" | "afiliado" | "fornecedor" | "parceiro")
+  }
+  className="p-3 border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+>
+  <option value="editor">Editor</option>
+  <option value="master">Master</option>
+  <option value="afiliado">Afiliado</option>
+  <option value="fornecedor">Fornecedor</option>
+  <option value="parceiro">Parceiro</option>
+</select>
+
             <button
               type="submit"
               disabled={submitting}
-              className="bg-blue-600 hover:bg-blue-700 disabled:opacity-70 text-white px-6 py-3 rounded flex items-center justify-center gap-2 transition"
+              className="bg-blue-900 hover:bg-blue-800 disabled:opacity-70 text-white px-6 py-3 rounded flex items-center justify-center gap-2 transition"
             >
               {submitting ? (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -194,7 +202,7 @@ export default function GestaoAdministradores() {
           <h2 className="text-xl font-semibold text-slate-700 mb-4">Lista de Administradores</h2>
           {loading ? (
             <div className="flex justify-center py-6">
-              <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-6 h-6 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
               <span className="ml-2 text-slate-600">Carregando...</span>
             </div>
           ) : admins.length === 0 ? (

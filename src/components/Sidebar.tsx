@@ -2,7 +2,9 @@
 "use client";
 
 import React from "react";
-import { FaHome, FaUsers, FaBox, FaDollarSign, FaBell, FaFileAlt, FaShieldAlt, FaSignOutAlt } from "react-icons/fa";
+
+import { FaHome, FaUsers, FaBox,
+   FaDollarSign, FaBell, FaUser, FaFileAlt, FaShieldAlt, FaSignOutAlt } from "react-icons/fa";
 
 // ✅ Defina as props
 interface SidebarProps {
@@ -11,7 +13,7 @@ interface SidebarProps {
 
 export default function Sidebar({ onLogout }: SidebarProps) {
   return (
-    <aside className="w-64 bg-slate-800 text-white h-screen fixed left-0 top-0 flex flex-col shadow-lg z-50">
+    <aside className="w-64 bg-red-900 text-white h-screen fixed left-0 top-0 flex flex-col shadow-lg z-50">
       {/* Logo */}
       <div className="logo p-6 border-b border-slate-700">
         <h2 className="text-2xl font-semibold flex items-center gap-2">
@@ -23,55 +25,49 @@ export default function Sidebar({ onLogout }: SidebarProps) {
       <nav className="flex-1 px-4 py-6 space-y-1">
         <a
           href="/dashboard"
-          className="flex items-center gap-3 p-2 rounded hover:bg-slate-700 transition"
+          className="flex items-center gap-3 p-2 rounded hover:bg-red-800 transition"
         >
           <FaHome size={20} />
           <span>Inicio</span>
         </a>
 
         <a
-          href="/clientes"
-          className="flex items-center gap-3 p-2 rounded hover:bg-slate-700 transition"
-        >
-          <FaUsers size={20} />
-          <span>Clientes</span>
-        </a>
-
-        <a
-          href="/produtos"
-          className="flex items-center gap-3 p-2 rounded hover:bg-slate-700 transition"
+          href="/itens-supresa"
+          className="flex items-center gap-3 p-2 rounded hover:bg-red-800 transition"
         >
           <FaBox size={20} />
-          <span>Produtos</span>
+          <span>Produtos/Serviços</span>
         </a>
 
         <a
-          href="/vendas"
-          className="flex items-center gap-3 p-2 rounded hover:bg-slate-700 transition"
+          href="/pessoasamadas"
+          className="flex items-center gap-3 p-2 rounded hover:bg-red-800 transition"
+        >
+          <FaUser size={20} />
+          <span>Pessoas Amadas</span>
+        </a>
+
+        <a
+          href="/Precos"
+          className="flex items-center gap-3 p-2 rounded hover:bg-red-800 transition"
         >
           <FaDollarSign size={20} />
-          <span>Vendas</span>
+          <span>Preços</span>
         </a>
 
         <a
           href="/notificacoes"
-          className="flex items-center gap-3 p-2 rounded hover:bg-slate-700 transition"
+          className="flex items-center gap-3 p-2 rounded hover:bg-red-800 transition"
         >
           <FaBell size={20} />
           <span>Notificações</span>
         </a>
 
-        <a
-          href="/paginas"
-          className="flex items-center gap-3 p-2 rounded hover:bg-slate-700 transition"
-        >
-          <FaFileAlt size={20} />
-          <span>Páginas</span>
-        </a>
+
 
         <a
           href="/administradores"
-          className="flex items-center gap-3 p-2 rounded hover:bg-slate-700 transition"
+          className="flex items-center gap-3 p-2 rounded hover:bg-red-800 transition"
         >
           <FaShieldAlt size={20} />
           <span>Administradores</span>

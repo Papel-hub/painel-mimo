@@ -6,33 +6,12 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebaseConfig";
 import Sidebar from "@/components/Sidebar";
 import ConnectionStatus from "@/components/ConnectionStatus";
-import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaBox, FaCreditCard, FaArrowLeft } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt,
+   FaBox, FaCreditCard, FaArrowLeft } from "react-icons/fa";
+import { Compra } from"@/types/compra";
+import  {Pagamento}  from"@/types/pagamento";
+import  {Cliente}  from"@/types/cliente";
 
-// Interfaces
-interface Compra {
-  produto: string;
-  qtd: number | string;
-  valor: number;
-  data: string;
-}
-
-interface Pagamento {
-  metodo?: string;
-  sstatus?: string;
-  total?: number;
-}
-
-interface Cliente {
-  nome: string;
-  email?: string;
-  celular?: string;
-  cpf?: string;
-  createdAt?: string;
-  status?: string;
-  tipoPessoa?: string;
-  compras?: Compra[];
-  pagamento?: Pagamento;
-}
 
 export default function DetalhesCliente() {
   const params = useParams();
@@ -49,7 +28,7 @@ export default function DetalhesCliente() {
     }
   };
 
-  // Wrapper para evitar repetição
+  // Wrapper
   const MainWrapper = ({ children }: { children: React.ReactNode }) => (
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar onLogout={handleLogout} />
@@ -65,6 +44,7 @@ export default function DetalhesCliente() {
         router.push("/clientes");
         return;
       }
+
       try {
         const docRef = doc(db, "clientes", id);
         const docSnap = await getDoc(docRef);
@@ -77,23 +57,13 @@ export default function DetalhesCliente() {
 
         const data = docSnap.data() as any;
 
-        // Mapear histórico de compras para o formato esperado
+        // Mapear histórico de compras
         const compras: Compra[] = data.historicoCompras?.map((pedido: any) => ({
           produto: pedido.items[0]?.title || "—",
           qtd: pedido.items[0]?.quantity || 0,
           valor: pedido.items[0]?.price || 0,
           data: pedido.createdAt || "—",
         })) || [];
-
-        // Último pedido para informações de pagamento
-        const ultimoPedido = data.historicoCompras?.[data.historicoCompras.length - 1];
-        const ultimoItem = ultimoPedido?.items?.[0];
-
-        const pagamento: Pagamento = {
-          metodo: ultimoItem?.paymentMethod || "—",
-          sstatus: ultimoPedido?.status || "—",
-          total: ultimoItem?.price || 0,
-        };
 
         setCliente({
           nome: data.nome || "—",
@@ -104,8 +74,9 @@ export default function DetalhesCliente() {
           status: data.status || "—",
           tipoPessoa: data.tipoPessoa || "—",
           compras,
-          pagamento,
+          pagamento: data.pagamento || { metodo: "—", sstatus: "—", total: 0 },
         });
+
       } catch (error) {
         console.error("Erro ao carregar cliente:", error);
         alert("Erro ao carregar os detalhes do cliente.");
@@ -114,6 +85,7 @@ export default function DetalhesCliente() {
         setLoading(false);
       }
     };
+
     carregarCliente();
   }, [id, router]);
 

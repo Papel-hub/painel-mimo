@@ -15,7 +15,7 @@ const circularStd = localFont({
 const siteUrl = "https://seusite.com";
 
 export const metadata: Metadata = {
-  title: "Painel Admin | Transforme sua Carreira Farmacêutica",
+  title: "Painel Mimo",
   authors: [{ name: "Marco Morais" }],
   metadataBase: new URL(siteUrl),
   alternates: { canonical: "/" },

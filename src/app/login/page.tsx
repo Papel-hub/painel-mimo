@@ -8,10 +8,10 @@ import {
   setPersistence,
   browserLocalPersistence,
   browserSessionPersistence,
+  onAuthStateChanged,
 } from "firebase/auth";
 import { app } from "@/lib/firebaseConfig";
-
-// Ícones do react-icons
+import Image from "next/image";
 import { FaUser, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 
 export default function LoginPage() {
@@ -20,9 +20,21 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
-  // Recuperar e-mail salvo
+  // Redireciona se já estiver logado
+  useEffect(() => {
+    const auth = getAuth(app);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        router.push("/home");
+      }
+    });
+    return () => unsubscribe();
+  }, [router]);
+
+  // Recuperar e-mail salvo (opcional, apenas para UX)
   useEffect(() => {
     const savedEmail = localStorage.getItem("adminEmail");
     if (savedEmail) {
@@ -42,13 +54,14 @@ export default function LoginPage() {
 
       await signInWithEmailAndPassword(auth, email, password);
 
+      // Salvar e-mail apenas se "Lembrar de mim" estiver marcado
       if (rememberMe) {
         localStorage.setItem("adminEmail", email);
       } else {
         localStorage.removeItem("adminEmail");
       }
 
-      router.push("/dashboard");
+      router.push("/home");
     } catch (err: unknown) {
       const error = err as { code?: string; message?: string };
       let msg = "Erro ao fazer login.";
@@ -79,78 +92,85 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100 px-4">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md bg-white p-8 rounded-xl shadow-lg border border-slate-200 space-y-6"
+        className="w-full max-w-md bg-red-900 p-8 rounded-xl shadow-lg border border-slate-200 space-y-6"
       >
-        {/* Título */}
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-slate-800">Área Administrativa</h2>
-          <p className="mt-1 text-lg text-blue-600 font-semibold">Talento Store</p>
+          <div className="flex justify-center mb-4">
+            <Image
+              src="/images/logo.svg"
+              alt="Mimo Meu e Seu"
+              width={100}
+              height={60}
+              className="object-contain"
+            />
+          </div>
+          <h2 className="text-2xl font-bold text-[#FCE1D0]">Área Administrativa</h2>
         </div>
 
-        {/* Campo de E-mail */}
         <div className="relative">
           <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={20} />
           <input
             type="email"
-            id="email"
             placeholder="E-mail"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"
             required
             autoFocus
-            className="w-full p-3 pl-12 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-3 pl-12 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
           />
         </div>
 
-        {/* Campo de Senha */}
         <div className="relative">
           <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={20} />
           <input
-            type="password"
-            id="senha"
-            placeholder="Senha"
+            type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            autoComplete="current-password"
+            placeholder="Digite sua senha"
+            className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 bg-white"
             required
-            className="w-full p-3 pl-12 pr-12 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={loading}
           />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-red-900"
+            aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+          >
+            {showPassword ? <FaEyeSlash size={20} /> : <FaEye size={20} />}
+          </button>
         </div>
 
-        {/* Lembrar de mim + Esqueceu a senha */}
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 text-sm">
           <label className="flex items-center gap-2">
             <input
               type="checkbox"
-              id="rememberMe"
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
-              className="rounded"
+              className="rounded text-red-900"
             />
-            <span className="text-slate-700">Lembrar de mim</span>
+            <span className="text-white">Lembrar de mim</span>
           </label>
-          <a href="/recuperar-senha" className="text-blue-600 hover:underline">
+          <a href="/login/recuperar-senha" className="text-[#FCE1D0] hover:underline">
             Esqueceu a senha?
           </a>
         </div>
 
-        {/* Mensagem de erro */}
         {error && (
           <div className="text-red-500 text-sm bg-red-50 p-3 rounded border border-red-200">
             {error}
           </div>
         )}
 
-        {/* Botão de login */}
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-lg font-medium flex items-center justify-center gap-2 transition disabled:opacity-70 disabled:cursor-not-allowed"
+          className="w-full bg-[#FCE1D0] hover:bg-red-100 text-red-900 p-3 rounded-full font-medium transition disabled:opacity-70"
         >
           {loading ? (
             <>
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span className="inline-block w-4 h-4 border-2 border-red-900 border-t-transparent rounded-full animate-spin mr-2"></span>
               Entrando...
             </>
           ) : (
