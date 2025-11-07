@@ -1,19 +1,24 @@
-// components/ConnectionStatus.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 
 export default function ConnectionStatus() {
-  const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
+  // Inicializa com false, navigator só será acessado no useEffect
+  const [isOnline, setIsOnline] = useState<boolean>(true);
 
   useEffect(() => {
+    // Só roda no cliente
+    const checkOnline = () => setIsOnline(navigator.onLine);
+
+    // Checa status inicial
+    checkOnline();
+
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
 
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
 
-    // Limpeza dos eventos
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
@@ -23,9 +28,7 @@ export default function ConnectionStatus() {
   return (
     <div
       className={`px-3 py-1 text-sm rounded-full font-medium flex items-center gap-1 ${
-        isOnline
-          ? "bg-green-500 text-white"
-          : "bg-red-500 text-white"
+        isOnline ? "bg-green-500 text-white" : "bg-red-500 text-white"
       }`}
     >
       <span
