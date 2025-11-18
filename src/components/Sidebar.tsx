@@ -2,83 +2,66 @@
 "use client";
 
 import React from "react";
+import { usePathname } from "next/navigation"; // Para destacar o item ativo
 
-import { FaHome, FaUsers, FaBox,
-   FaDollarSign, FaBell, FaUser, FaFileAlt, FaShieldAlt, FaSignOutAlt } from "react-icons/fa";
+import { 
+  FaHome, FaUsers, FaBox, FaDollarSign, FaBell, 
+  FaUser, FaFileAlt, FaShieldAlt, FaSignOutAlt,FaCalendarAlt
+} from "react-icons/fa";
 
-// ✅ Defina as props
 interface SidebarProps {
-  onLogout: () => void; // função que não retorna nada
+  onLogout: () => void;
 }
 
+// Defina os itens do menu como dados estruturados
+const menuItems = [
+  { href: "/home", label: "Inicio", icon: <FaHome size={20} /> },
+  { href: "/itens-supresa", label: "Produtos/Serviços", icon: <FaBox size={20} /> },
+  { href: "/espoza-feliz", label: "Espoza Feliz", icon: <FaUser size={20} /> },
+  { href: "/esperiencia-mimo", label: "Experiencias Mimo", icon: <FaUser size={20} /> },
+  { href: "/precos", label: "Preços", icon: <FaDollarSign size={20} /> },
+  { href: "/reunioes", label: "Reuniões", icon: <FaCalendarAlt size={20} /> },
+  { href: "/notificacoes", label: "Notificações", icon: <FaBell size={20} /> },
+  { href: "/administradores", label: "Administradores", icon: <FaShieldAlt size={20} /> },
+];
+
 export default function Sidebar({ onLogout }: SidebarProps) {
+  const pathname = usePathname(); // Obtém a rota atual
+
   return (
     <aside className="w-64 bg-red-900 text-white h-screen fixed left-0 top-0 flex flex-col shadow-lg z-50">
       {/* Logo */}
-      <div className="logo p-6 border-b border-slate-700">
+      <div className="p-6 border-b border-red-800">
         <h2 className="text-2xl font-semibold flex items-center gap-2">
           <FaHome /> Painel Admin
         </h2>
       </div>
 
       {/* Navegação */}
-      <nav className="flex-1 px-4 py-6 space-y-1">
-        <a
-          href="/dashboard"
-          className="flex items-center gap-3 p-2 rounded hover:bg-red-800 transition"
-        >
-          <FaHome size={20} />
-          <span>Inicio</span>
-        </a>
-
-        <a
-          href="/itens-supresa"
-          className="flex items-center gap-3 p-2 rounded hover:bg-red-800 transition"
-        >
-          <FaBox size={20} />
-          <span>Produtos/Serviços</span>
-        </a>
-
-        <a
-          href="/pessoasamadas"
-          className="flex items-center gap-3 p-2 rounded hover:bg-red-800 transition"
-        >
-          <FaUser size={20} />
-          <span>Pessoas Amadas</span>
-        </a>
-
-        <a
-          href="/Precos"
-          className="flex items-center gap-3 p-2 rounded hover:bg-red-800 transition"
-        >
-          <FaDollarSign size={20} />
-          <span>Preços</span>
-        </a>
-
-        <a
-          href="/notificacoes"
-          className="flex items-center gap-3 p-2 rounded hover:bg-red-800 transition"
-        >
-          <FaBell size={20} />
-          <span>Notificações</span>
-        </a>
-
-
-
-        <a
-          href="/administradores"
-          className="flex items-center gap-3 p-2 rounded hover:bg-red-800 transition"
-        >
-          <FaShieldAlt size={20} />
-          <span>Administradores</span>
-        </a>
+      <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+        {menuItems.map((item) => (
+          <a
+            key={item.href}
+            href={item.href}
+            className={`flex items-center gap-3 p-2 rounded transition ${
+              pathname === item.href
+                ? "bg-red-700" // Estilo para o item ativo
+                : "hover:bg-red-800"
+            }`}
+            aria-current={pathname === item.href ? "page" : undefined} // Acessibilidade para item ativo
+          >
+            {item.icon}
+            <span>{item.label}</span>
+          </a>
+        ))}
       </nav>
 
       {/* Botão de Logout */}
-      <div className="p-4 border-t border-slate-700">
+      <div className="p-4 border-t border-red-800">
         <button
           onClick={onLogout}
           className="w-full flex items-center gap-3 p-2 bg-red-600 hover:bg-red-700 rounded transition"
+          aria-label="Sair da conta"
         >
           <FaSignOutAlt size={20} />
           <span>Sair</span>

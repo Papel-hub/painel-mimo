@@ -5,7 +5,7 @@ export interface Cesta {
   price: number;
   description: string; // "descricao" → "description"
   image: string[]; // array de URLs
-  category: "Romance" | "Familia & Amigos" | "Digital"; // ajustado
+  category: "Romance" | "Familia & Amigos" | "Datas Especiais"; // ajustado
   bestseller: boolean;
   createdAt: string; // ISO string, não Date
 
@@ -20,6 +20,7 @@ export interface Cesta {
     cesta?: number;
     bandeja?: number;
     maleta?: number;
+    caixamimo?: number;
   };
   mediaPersonalizationFee?: number;
   video?: string;
