@@ -190,21 +190,35 @@ export default function AdminCartasPage() {
           </div>
         </div>
 
-        {/* Lado Direito: Preço e Botão de Contato */}
-        <div className="w-full md:w-48 p-5 flex flex-col justify-between items-end bg-slate-50/50">
-          <div className="text-right">
-            <p className="text-xl font-black text-slate-900">R$ {p.financeiro?.total?.toFixed(2)}</p>
-            <p className="text-[10px] text-slate-400 uppercase font-bold">{p.financeiro?.metodo}</p>
-          </div>
-          
-          <a 
-            href={`https://wa.me/${p.cliente?.whatsapp?.replace(/\D/g, '')}`} 
-            target="_blank"
-            className="flex items-center gap-2 text-[10px] font-bold bg-green-600 text-white px-3 py-2 rounded-full hover:bg-green-700 transition w-full justify-center"
-          >
-            Falar no Whats
-          </a>
-        </div>
+{/* Lado Direito: Preço e Botão de Contato */}
+<div className="w-full md:w-48 p-5 flex flex-col justify-between items-end bg-slate-50/50">
+  <div className="text-right">
+    <p className="text-xl font-black text-slate-900">R$ {p.financeiro?.total?.toFixed(2)}</p>
+    <p className="text-[10px] text-slate-400 uppercase font-bold">{p.financeiro?.metodo}</p>
+  </div>
+  
+  <div className="flex flex-col gap-2 w-full"> {/* Container para os botões */}
+    <button 
+      onClick={() => {
+        const dominioSite = "https://cartasdamimo.com"; // Troque pelo seu domínio real
+        const linkCarta = `${dominioSite}/presente/${p.id}`;
+        navigator.clipboard.writeText(linkCarta);
+        alert("Link da carta copiado!");
+      }}
+      className="flex items-center gap-2 text-[10px] font-bold bg-white text-red-900 border border-red-900 px-3 py-2 rounded-full hover:bg-red-50 transition w-full justify-center"
+    >
+      🎁 Copiar Link Mimo
+    </button>
+
+    <a 
+      href={`https://wa.me/${p.cliente?.whatsapp?.replace(/\D/g, '')}`} 
+      target="_blank"
+      className="flex items-center gap-2 text-[10px] font-bold bg-green-600 text-white px-3 py-2 rounded-full hover:bg-green-700 transition w-full justify-center"
+    >
+      Falar no Whats
+    </a>
+  </div>
+</div>
 
       </div>
     </div>
