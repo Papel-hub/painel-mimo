@@ -1,43 +1,80 @@
 "use client";
 
-import { FaExclamationTriangle, FaEnvelope, FaArrowLeft } from "react-icons/fa";
+import { FaExclamationCircle, FaEnvelope, FaArrowLeft, FaExternalLinkAlt } from "react-icons/fa";
 import Link from "next/link";
 
 export default function AcessoNegado() {
+  const adminEmail = "carlosnslogistica@gmail.com";
+
   return (
-    <div className="flex min-h-screen bg-gradient-to-br from-red-50 to-orange-50">
-      <main className="flex-1 flex items-center justify-center p-8">
-        <div className="bg-white p-10 rounded-xl shadow-lg max-w-lg w-full text-center border border-red-200">
-          <FaExclamationTriangle className="mx-auto text-red-500" size={64} />
+    <div className="flex min-h-screen bg-[#FCE1D0] items-center justify-center p-6">
+      <main className="w-full max-w-xl">
+        <div className="bg-white p-8 md:p-12 rounded-3xl shadow-2xl border border-white/50 text-center relative overflow-hidden">
+          
+          {/* Detalhe Decorativo Superior */}
+          <div className="absolute top-0 left-0 w-full h-2 bg-red-600"></div>
 
-          <h1 className="text-3xl font-bold text-red-600 mt-6 mb-4">
-            Acesso Negado
-          </h1>
-
-          <p className="text-slate-700 mb-4">
-            Parece que você esqueceu sua senha ou não tem permissão para acessar esta área.
-          </p>
-
-          <p className="text-slate-700 mb-2">Para resolver o problema, você pode:</p>
-          <ul className="list-disc pl-5 text-left text-slate-600 text-sm mb-6 space-y-1">
-            <li>Entrar em contato com o administrador principal.</li>
-            <li>Acessar o painel de controle do Firebase App.</li>
-            <li>Se o problema persistir, contate o desenvolvedor.</li>
-          </ul>
-
-          <div className="bg-slate-50 p-4 rounded border border-slate-200 text-left mb-6">
-            <p className="text-slate-700 flex items-center gap-2">
-              <FaEnvelope className="text-blue-500" />
-              <strong>E-mail do Administrador:</strong> talentostore2025@gmail.com
-            </p>
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-red-50 rounded-full mb-6">
+            <FaExclamationCircle className="text-red-500" size={40} />
           </div>
 
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded transition-colors"
-          >
-            <FaArrowLeft size={16} /> Voltar para Login
-          </Link>
+          <h1 className="text-3xl font-black text-slate-800 mb-4 tracking-tight">
+            Ops! Acesso Restrito
+          </h1>
+
+          <p className="text-slate-500 text-lg mb-8 leading-relaxed">
+            Seu e-mail não foi encontrado na lista de administradores autorizados ou sua conta está temporariamente inativa.
+          </p>
+
+          <div className="grid gap-4 mb-8 text-left">
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-start gap-4">
+              <div className="bg-white p-2 rounded-lg shadow-sm text-blue-500">
+                <FaEnvelope size={20} />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-700">Solicitar Acesso</p>
+                <p className="text-sm text-slate-500 mb-2">Envie um e-mail para o administrador master:</p>
+                <a 
+                  href={`mailto:${adminEmail}`}
+                  className="text-red-600 font-semibold text-sm hover:underline break-all"
+                >
+                  {adminEmail}
+                </a>
+              </div>
+            </div>
+
+            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-start gap-4">
+              <div className="bg-white p-2 rounded-lg shadow-sm text-orange-500">
+                <FaExternalLinkAlt size={20} />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-700">Verificar Credenciais</p>
+                <p className="text-sm text-slate-500">
+                  Certifique-se de que está usando o e-mail corporativo correto.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-black text-white px-8 py-4 rounded-2xl font-bold transition-all active:scale-95 shadow-lg shadow-slate-200"
+            >
+              <FaArrowLeft size={16} /> Voltar ao Login
+            </Link>
+            
+            <a
+              href={`mailto:${adminEmail}`}
+              className="inline-flex items-center justify-center gap-2 bg-white border-2 border-slate-100 hover:border-red-200 text-slate-700 px-8 py-4 rounded-2xl font-bold transition-all"
+            >
+              Contatar Suporte
+            </a>
+          </div>
+
+          <p className="mt-8 text-xs text-slate-400 uppercase tracking-widest font-semibold">
+            v1.0.4 - Mimo System
+          </p>
         </div>
       </main>
     </div>
