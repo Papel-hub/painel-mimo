@@ -18,6 +18,7 @@ export default function AdminCartasPage() {
   const [pedidos, setPedidos] = useState<any[]>([]);
   const [precos, setPrecos] = useState<any>({});
   const [mensagens, setMensagens] = useState<any[]>([]);
+  const [novoTitulo, setNovoTitulo] = useState(''); // Novo estado para o título
   const [novaMensagem, setNovaMensagem] = useState('');
   const [loading, setLoading] = useState(true);
   const [pedidoDetalhe, setPedidoDetalhe] = useState<any | null>(null);
@@ -75,12 +76,25 @@ export default function AdminCartasPage() {
     }
   };
 
-  const adicionarMensagem = async () => {
-    if (!novaMensagem.trim()) return;
-    await addDoc(collection(db, "mensagens_predefinidas"), { texto: novaMensagem });
+const adicionarMensagem = async () => {
+  if (!novaMensagem.trim() || !novoTitulo.trim()) {
+    toast.error("Preencha o título e o texto da mensagem.");
+    return;
+  }
+
+  try {
+    await addDoc(collection(db, "mensagens_predefinidas"), { 
+      titulo: novoTitulo.toUpperCase(), // Salva em caixa alta como no seu exemplo
+      texto: novaMensagem 
+    });
+    
     setNovaMensagem('');
-    toast.success("Frase adicionada!");
-  };
+    setNovoTitulo('');
+    toast.success("Mensagem predefinida adicionada!");
+  } catch (e) {
+    toast.error("Erro ao salvar mensagem.");
+  }
+};
 
   const excluirMensagem = async (id: string) => {
     await deleteDoc(doc(db, "mensagens_predefinidas", id));
@@ -118,7 +132,7 @@ export default function AdminCartasPage() {
         </header>
 
         {/* TABELA DE PREÇOS E FRASES (MANTIDAS) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
           <section className="lg:col-span-1 bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
             <h2 className="font-bold text-slate-800 mb-6 flex items-center gap-2">
               <FaSave className="text-red-900" /> Preços Sugeridos
@@ -144,32 +158,49 @@ export default function AdminCartasPage() {
             </div>
           </section>
 
-          <section className="lg:col-span-2 bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
-            <h2 className="font-bold text-slate-800 mb-6 flex items-center gap-2">
-              <FaPlus className="text-red-900" /> Frases Predefinidas
-            </h2>
-            <div className="flex gap-2 mb-6">
-              <input 
-                placeholder="Nova frase..."
-                value={novaMensagem}
-                onChange={(e) => setNovaMensagem(e.target.value)}
-                className="flex-1 bg-slate-50 border border-slate-100 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-red-900"
-              />
-              <button onClick={adicionarMensagem} className="bg-red-900 text-white px-4 rounded-xl hover:bg-red-800 transition">
-                <FaPlus />
-              </button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[220px] overflow-y-auto pr-2 custom-scrollbar">
-              {mensagens.map((m) => (
-                <div key={m.id} className="group bg-slate-50 p-3 rounded-xl border border-slate-100 flex justify-between items-center hover:border-red-200 transition">
-                  <span className="text-[11px] text-slate-600 line-clamp-1">{m.texto}</span>
-                  <button onClick={() => excluirMensagem(m.id)} className="text-slate-300 hover:text-red-600 opacity-0 group-hover:opacity-100 transition">
-                    <FaTrash size={12} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </section>
+{/* FRASES PREDEFINIDAS */}
+<section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+  <h3 className="text-sm font-bold mb-4 flex items-center gap-2">
+    <FaPlus /> Configurar Mensagens Sugeridas
+  </h3>
+  
+  <div className="space-y-3 mb-6">
+    <input 
+      value={novoTitulo} 
+      onChange={e => setNovoTitulo(e.target.value)} 
+      placeholder="Título (ex: PEDIDO DE PERDÃO)" 
+      className="w-full bg-slate-50 border-none rounded-lg p-2 text-xs font-bold" 
+    />
+    <textarea 
+      value={novaMensagem} 
+      onChange={e => setNovaMensagem(e.target.value)} 
+      placeholder="Texto completo da mensagem..." 
+      rows={3}
+      className="w-full bg-slate-50 border-none rounded-lg p-2 text-sm" 
+    />
+    <button 
+      onClick={adicionarMensagem} 
+      className="w-full bg-red-900 text-white py-3 rounded-xl  rounded-xl hover:bg-red-800 font-bold  transition"
+    >
+      Adicionar à Lista
+    </button>
+  </div>
+
+  <div className="max-h-60 overflow-y-auto space-y-3 pr-2">
+    {mensagens.map(m => (
+      <div key={m.id} className="group relative bg-slate-50 p-3 rounded-xl border border-transparent hover:border-slate-200 transition">
+        <h4 className="text-[10px] font-black text-slate-400 mb-1">{m.titulo}</h4>
+        <p className="text-[11px] text-slate-600 leading-relaxed pr-6">{m.texto}</p>
+        <button 
+          onClick={() => excluirMensagem(m.id)} 
+          className="absolute top-2 right-2 text-slate-300 hover:text-red-600 opacity-0 group-hover:opacity-100 transition"
+        >
+          <FaTrash size={12} />
+        </button>
+      </div>
+    ))}
+  </div>
+</section>
         </div>
 
         {/* LISTA DE PEDIDOS */}
