@@ -10,7 +10,7 @@ import Sidebar from "@/components/Sidebar";
 import ConnectionStatus from "@/components/ConnectionStatus";
 import { 
   FaEnvelopeOpenText, FaSave, FaPlus, FaTrash, FaInfoCircle, 
-  FaTimes, FaWhatsapp, FaCalendarAlt, FaUser, FaHistory, FaCopy 
+  FaTimes, FaWhatsapp, FaCalendarAlt, FaUser, FaHistory, FaCopy
 } from "react-icons/fa";
 import { toast } from "react-hot-toast";
 
@@ -101,8 +101,20 @@ const adicionarMensagem = async () => {
     toast.success("Frase removida.");
   };
 
+
   const novosPedidosCount = pedidos.filter(p => p.visto === false || !p.hasOwnProperty('visto')).length;
 
+const excluirPedido = async (id: string) => {
+  if (window.confirm("⚠️ ATENÇÃO: Tem certeza que deseja excluir este pedido permanentemente? Esta ação não pode ser desfeita.")) {
+    try {
+      await deleteDoc(doc(db, "pedidos", id));
+      toast.success("Pedido removido com sucesso!");
+    } catch (e) {
+      console.error(e);
+      toast.error("Erro ao excluir o pedido.");
+    }
+  }
+};
   if (loading) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
       <div className="animate-spin w-10 h-10 border-4 border-red-900 rounded-full border-t-transparent" />
@@ -250,26 +262,38 @@ const adicionarMensagem = async () => {
                             <p className="text-[9px] font-bold text-slate-400 uppercase">{p.financeiro?.metodo}</p>
                         </div>
                         
-                        <div className="flex flex-col gap-2">
-                          <button 
-                              onClick={() => abrirDetalhes(p)}
-                              className={`flex items-center justify-center gap-2 px-5 py-2 rounded-xl text-xs font-black transition ${
-                                  isNovo ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-slate-900 text-white hover:bg-black'
-                              }`}
-                          >
-                              <FaInfoCircle /> Detalhes
-                          </button>
-                          
-                          <button 
-onClick={() => {
-    // Forçamos o domínio principal das cartas
-    navigator.clipboard.writeText(`https://cartasdamimo.com/presente/${p.id}`);
-    toast.success("Link da Mimo copiado!");
-  }}                              className="flex items-center justify-center gap-2 px-5 py-2 bg-slate-100 text-slate-700 rounded-xl text-[10px] font-bold hover:bg-slate-200 transition"
-                          >
-                              <FaCopy /> Copiar Link
-                          </button>
-                        </div>
+<div className="flex flex-col gap-2">
+  <button 
+      onClick={() => abrirDetalhes(p)}
+      className={`flex items-center justify-center gap-2 px-5 py-2 rounded-xl text-xs font-black transition ${
+          isNovo ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-slate-900 text-white hover:bg-black'
+      }`}
+  >
+      <FaInfoCircle /> Detalhes
+  </button>
+  
+  <div className="flex gap-2">
+    <button 
+      onClick={() => {
+        const link = `https://cartasdamimo.com/presente/${p.id}`;
+        navigator.clipboard.writeText(link);
+        toast.success("Link da Mimo copiado!");
+      }} 
+      className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-slate-100 text-slate-700 rounded-xl text-[10px] font-bold hover:bg-slate-200 transition"
+      title="Copiar Link"
+    >
+      <FaCopy /> Link
+    </button>
+
+    <button 
+      onClick={() => excluirPedido(p.id)} 
+      className="flex items-center justify-center px-4 py-2 bg-red-50 text-red-500 rounded-xl text-[10px] font-bold hover:bg-red-500 hover:text-white transition border border-red-100"
+      title="Excluir Pedido"
+    >
+      <FaTrash />
+    </button>
+  </div>
+</div>
                     </div>
                   </div>
                 </div>
