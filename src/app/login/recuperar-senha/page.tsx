@@ -11,7 +11,6 @@ export default function AcessoNegado() {
       <main className="w-full max-w-xl">
         <div className="bg-white p-8 md:p-12 rounded-3xl shadow-2xl border border-white/50 text-center relative overflow-hidden">
           
-          {/* Detalhe Decorativo Superior */}
           <div className="absolute top-0 left-0 w-full h-2 bg-red-600"></div>
 
           <div className="inline-flex items-center justify-center w-20 h-20 bg-red-50 rounded-full mb-6">

@@ -30,7 +30,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) router.push("/home");
+      if (user) router.push("/dashboard");
     });
     return () => unsubscribe();
   }, [router]);
@@ -74,7 +74,7 @@ export default function LoginPage() {
         localStorage.removeItem("adminEmail");
       }
 
-      router.push("/home");
+      router.push("/dashboard");
     } catch (err: any) {
       console.error(err);
       let msg = "Erro ao fazer login.";

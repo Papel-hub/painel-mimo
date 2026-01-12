@@ -1,236 +1,96 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { db } from "@/lib/firebaseConfig";
-import { collection, getDocs, doc, updateDoc, deleteDoc } from "firebase/firestore";
-import Sidebar from "@/components/Sidebar";
-import ConnectionStatus from "@/components/ConnectionStatus";
-import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
-import Control from "./components/Control";
-import RealTimeReports from "./components/RealTimeReports";
-import ProductPlus from "./components/ProductPlus";
-import ApprovalCard from "./components/ApprovalCard";
-import {
-  FaFireAlt,
-  FaChartLine,
-  FaClipboardCheck,
-  FaHome,
-} from "react-icons/fa";
+import { useState, useEffect } from 'react';
+import { db } from '@/lib/firebaseConfig';
+import { doc, getDoc, setDoc, collection, getDocs, addDoc, deleteDoc } from 'firebase/firestore';
+import Sidebar from '@/components/Sidebar';
+import { FaHome, FaUpload, FaTrash } from "react-icons/fa";
 
-// Tipagem para aprovações
-interface Approval {
-  id: string;
-  customerName: string;
-  productName: string;
-  amount: string;
-  categoria: string;
-  date: string;
-  imageUrl?: string;
-  status?: "pendente" | "aprovado" | "reprovado";
-}
+export default function HomeConfigPage() {
+  const [limiteCards, setLimiteCards] = useState(4);
+  const [banners, setBanners] = useState<{ id: string, imageUrl: string }[]>([]);
+  const [uploading, setUploading] = useState(false);
 
-// Tipagem para os cards do dashboard
-type DashboardCardProps = {
-  title: string;
-  count: number;
-  icon: React.ReactNode;
-  bgColor: string;
-};
-
-// Card pequeno do topo do dashboard
-const DashboardCard = ({ title, count, icon, bgColor }: DashboardCardProps) => (
-  <div className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow flex items-center gap-4">
-    <div className={`p-3 rounded-full ${bgColor}`}>{icon}</div>
-    <div>
-      <h3 className="text-sm font-medium text-slate-500">{title}</h3>
-      <span className="text-2xl font-bold text-slate-800">{count}</span>
-    </div>
-  </div>
-);
-
-export default function Dashboard() {
-  const [counts, setCounts] = useState({
-    clientesCount: 0,
-    produtosCount: 0,
-    vendasCount: 0,
-    notificacoesCount: 0,
-  });
-
-  const [approvals, setApprovals] = useState<Approval[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [userName, setUserName] = useState<string | null>(null);
-
-  // Obter usuário logado
-  useEffect(() => {
-    const auth = getAuth();
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setUserName(user.displayName || user.email || "Administrador");
-      } else {
-        window.location.href = "/login";
-      }
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // Buscar dados do Firebase
+  // Carregar dados
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const [clientesSnap, produtosSnap, vendasSnap, notificacoesSnap, approvalsSnap] =
-          await Promise.all([
-            getDocs(collection(db, "clientes")),
-            getDocs(collection(db, "produtos")),
-            getDocs(collection(db, "vendas")),
-            getDocs(collection(db, "notifications")),
-            getDocs(collection(db, "approvals")),
-          ]);
+      const configSnap = await getDoc(doc(db, 'configuracoes', 'home'));
+      if (configSnap.exists()) setLimiteCards(configSnap.data().limiteCards);
 
-        setCounts({
-          clientesCount: clientesSnap.size,
-          produtosCount: produtosSnap.size,
-          vendasCount: vendasSnap.size,
-          notificacoesCount: notificacoesSnap.size,
-        });
-
-        const approvalsList = approvalsSnap.docs.map((docSnap) => ({
-          id: docSnap.id,
-          ...docSnap.data(),
-        })) as Approval[];
-
-        // Ordenar por data (mais recentes primeiro)
-        approvalsList.sort(
-          (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        );
-
-        setApprovals(approvalsList);
-      } catch (error) {
-        console.error("Erro ao buscar dados:", error);
-      } finally {
-        setLoading(false);
-      }
+      const bannerSnap = await getDocs(collection(db, 'banners'));
+      setBanners(bannerSnap.docs.map(d => ({ id: d.id, imageUrl: d.data().imageUrl })));
     };
-
     fetchData();
   }, []);
 
-  // Função de logout
-  const handleLogout = async () => {
-    if (confirm("Tem certeza que deseja sair?")) {
-      const auth = getAuth();
-      await signOut(auth);
-      window.location.href = "/login";
+  // Upload para a VPS
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      if (data.success) {
+        // Salva a URL gerada pela VPS no Firestore
+        const docRef = await addDoc(collection(db, 'banners'), { 
+          imageUrl: data.url, 
+          active: true 
+        });
+        setBanners(prev => [...prev, { id: docRef.id, imageUrl: data.url }]);
+      }
+    } catch (err) {
+      alert("Erro ao subir arquivo para /var/www/uploads");
+    } finally {
+      setUploading(false);
     }
   };
 
-  // Funções de aprovação/reprovação
-  const handleApprove = async (id: string) => {
-    await updateDoc(doc(db, "approvals", id), { status: "aprovado" });
-    setApprovals((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status: "aprovado" } : a))
-    );
-  };
-
-  const handleReject = async (id: string) => {
-    await updateDoc(doc(db, "approvals", id), { status: "reprovado" });
-    setApprovals((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status: "reprovado" } : a))
-    );
-  };
-
-  const handleDelete = async (id: string) => {
-    if (confirm("Tem certeza que deseja excluir este pedido?")) {
-      await deleteDoc(doc(db, "approvals", id));
-      setApprovals((prev) => prev.filter((a) => a.id !== id));
-    }
+  const saveLimit = async () => {
+    await setDoc(doc(db, 'configuracoes', 'home'), { limiteCards });
+    alert("Limite atualizado!");
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex">
-      {/* Sidebar */}
-      <Sidebar onLogout={handleLogout} />
-
+    <div className="min-h-screen bg-slate-50 flex">
+      <Sidebar onLogout={() => {}} />
       <main className="ml-64 flex-1 p-8">
-        {/* Cabeçalho */}
-        <header className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            <FaHome className="text-blue-600" />
-            Dashboard
-          </h1>
-          <ConnectionStatus />
-        </header>
+        <h1 className="text-2xl font-bold mb-8">Gerenciar Home</h1>
 
-        {/* Mensagem de boas-vindas */}
-        <p className="text-lg text-slate-700 mb-8">
-          Bem-vindo, <strong>{userName || "usuário"}</strong>, ao painel administrativo da{" "}
-          <strong>Mimo Meu e Seu</strong>.
-        </p>
+        <section className="bg-white p-6 rounded-xl shadow-sm border mb-8">
+          <h2 className="font-semibold mb-4 text-red-900">Quantidade de Cards</h2>
+          <div className="flex gap-4">
+            <input type="number" value={limiteCards} onChange={e => setLimiteCards(Number(e.target.value))} className="border p-2 rounded w-20" />
+            <button onClick={saveLimit} className="bg-red-900 text-white px-4 py-2 rounded">Salvar</button>
+          </div>
+        </section>
 
-        {/* Seção de controle */}
-        <Control />
+        <section className="bg-white p-6 rounded-xl shadow-sm border">
+          <h2 className="font-semibold mb-4 text-red-900">Banners (/var/www/up)</h2>
+          <label className="block border-2 border-dashed p-10 text-center cursor-pointer hover:bg-slate-50">
+            <input type="file" className="hidden" onChange={handleUpload} disabled={uploading} />
+            {uploading ? "Enviando..." : "Clique para subir novo banner"}
+          </label>
 
-        {/* Relatórios */}
-        <h2 className="text-xl font-semibold text-slate-800 mb-6 flex items-center gap-2">
-          <FaChartLine className="text-red-700" />
-          Relatórios em tempo real
-        </h2>
-        <RealTimeReports />
-
-        {/* Produtos mais vendidos */}
-        <h2 className="text-xl font-semibold text-slate-800 mb-6 flex items-center gap-2">
-          <FaFireAlt className="text-red-700" />
-          Produtos Mais Vendidos
-        </h2>
-        <ProductPlus />
-
-        {/* Aprovações manuais */}
-        <h2 className="text-xl font-semibold text-slate-800 mb-6 flex items-center gap-2">
-          <FaClipboardCheck className="text-red-700" />
-          Aprovações Manuais
-        </h2>
-
-        {loading ? (
-          <p className="text-center text-gray-500 py-6">Carregando aprovações...</p>
-        ) : approvals.length === 0 ? (
-          <p className="text-center text-gray-500 py-6">Nenhuma aprovação pendente.</p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {approvals.map((a) => (
-              <div key={a.id}>
-                <ApprovalCard
-                  id={a.id}
-                  customerName={a.customerName}
-                  productName={a.productName}
-                  amount={a.amount}
-                  categoria={a.categoria}
-                  date={a.date}
-                  imageUrl={a.imageUrl || "/images/default-product.png"}
-                />
-
-                <div className="flex gap-2 mt-3">
-                  <button
-                    onClick={() => handleApprove(a.id)}
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 rounded-lg transition"
-                  >
-                    Aprovar
-                  </button>
-                  <button
-                    onClick={() => handleReject(a.id)}
-                    className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-lg transition"
-                  >
-                    Reprovar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(a.id)}
-                    className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 rounded-lg transition"
-                  >
-                    Excluir
-                  </button>
-                </div>
+          <div className="grid grid-cols-3 gap-4 mt-8">
+            {banners.map(b => (
+              <div key={b.id} className="relative group aspect-video rounded-lg overflow-hidden border">
+                <img src={b.imageUrl} className="w-full h-full object-cover" />
+                <button onClick={async () => {
+                  await deleteDoc(doc(db, 'banners', b.id));
+                  setBanners(prev => prev.filter(item => item.id !== b.id));
+                }} className="absolute top-2 right-2 bg-red-600 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                  <FaTrash size={12} />
+                </button>
               </div>
             ))}
           </div>
-        )}
+        </section>
       </main>
     </div>
   );
